@@ -6,12 +6,11 @@ import ViewImage from '../components/ViewImage';
 import { MdDelete } from "react-icons/md";
 import { useSelector } from 'react-redux'
 import { IoClose } from "react-icons/io5";
-import AddFieldComponent from '../components/AddFieldComponent';
 import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
 import AxiosToastError from '../utils/AxiosToastError';
 import successAlert from '../utils/SuccessAlert';
-import { useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 const EditProductAdmin = ({ close ,data : propsData,fetchProductData}) => {
   const [data, setData] = useState({
@@ -35,19 +34,31 @@ const EditProductAdmin = ({ close ,data : propsData,fetchProductData}) => {
   const [selectSubCategory, setSelectSubCategory] = useState("")
   const allSubCategory = useSelector(state => state.product.allSubCategory)
 
-  const [openAddField, setOpenAddField] = useState(false)
-  const [fieldName, setFieldName] = useState("")
-
-
   const handleChange = (e) => {
     const { name, value } = e.target
 
-    setData((preve) => {
-      return {
-        ...preve,
-        [name]: value
-      }
-    })
+    if (name === 'name') {
+      const filtered = value.replace(/[^A-Za-z ]/g, '')
+      setData((prev) => ({
+        ...prev,
+        [name]: filtered
+      }))
+      return
+    }
+
+    if (['unit', 'stock', 'price', 'costPrice', 'discount'].includes(name)) {
+      const filtered = value.replace(/[^0-9]/g, '')
+      setData((prev) => ({
+        ...prev,
+        [name]: filtered
+      }))
+      return
+    }
+
+    setData((preve) => ({
+      ...preve,
+      [name]: value
+    }))
   }
 
   const handleUploadImage = async (e) => {
@@ -106,22 +117,39 @@ const EditProductAdmin = ({ close ,data : propsData,fetchProductData}) => {
     })
   }
 
-  const handleAddField = () => {
-    setData((preve) => {
-      return {
-        ...preve,
-        more_details: {
-          ...preve.more_details,
-          [fieldName]: ""
-        }
-      }
-    })
-    setFieldName("")
-    setOpenAddField(false)
-  }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    if (!data.name || !/^[A-Za-z ]+$/.test(data.name.trim())) {
+      toast.error('Name can only contain letters and spaces')
+      return
+    }
+
+    if (!data.unit || !/^[0-9]+$/.test(String(data.unit))) {
+      toast.error('Unit must be a number')
+      return
+    }
+
+    if (!data.stock || !/^[0-9]+$/.test(String(data.stock))) {
+      toast.error('Stock must be a number')
+      return
+    }
+
+    if (!data.price || !/^[0-9]+$/.test(String(data.price))) {
+      toast.error('Price must be a number')
+      return
+    }
+
+    if (data.costPrice !== '' && !/^[0-9]+$/.test(String(data.costPrice))) {
+      toast.error('Cost price must be a number')
+      return
+    }
+
+    if (data.discount !== '' && !/^[0-9]+$/.test(String(data.discount))) {
+      toast.error('Discount must be a number')
+      return
+    }
+
     console.log("data", data)
 
     try {
@@ -336,7 +364,8 @@ const EditProductAdmin = ({ close ,data : propsData,fetchProductData}) => {
                 <label htmlFor='unit' className='font-medium'>Unit</label>
                 <input
                   id='unit'
-                  type='text'
+                  type='number'
+                  inputMode='numeric'
                   placeholder='Enter product unit'
                   name='unit'
                   value={data.unit}
@@ -404,9 +433,9 @@ const EditProductAdmin = ({ close ,data : propsData,fetchProductData}) => {
 
               {/**add more field**/}
               {
-                Object?.keys(data?.more_details)?.map((k, index) => {
+                Object?.keys(data?.more_details || {})?.map((k, index) => {
                   return (
-                    <div className='grid gap-1'>
+                    <div className='grid gap-1' key={`${k}-${index}`}>
                       <label htmlFor={k} className='font-medium'>{k}</label>
                       <input
                         id={k}
@@ -414,15 +443,13 @@ const EditProductAdmin = ({ close ,data : propsData,fetchProductData}) => {
                         value={data?.more_details[k]}
                         onChange={(e) => {
                           const value = e.target.value
-                          setData((preve) => {
-                            return {
-                              ...preve,
-                              more_details: {
-                                ...preve.more_details,
-                                [k]: value
-                              }
+                          setData((preve) => ({
+                            ...preve,
+                            more_details: {
+                              ...preve.more_details,
+                              [k]: value
                             }
-                          })
+                          }))
                         }}
                         required
                         className='bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded'
@@ -431,10 +458,6 @@ const EditProductAdmin = ({ close ,data : propsData,fetchProductData}) => {
                   )
                 })
               }
-
-              <div onClick={() => setOpenAddField(true)} className=' hover:bg-primary-200 bg-white py-1 px-3 w-32 text-center font-semibold border border-primary-200 hover:text-neutral-900 cursor-pointer rounded'>
-                Add Fields
-              </div>
 
               <button
                 className='bg-primary-100 hover:bg-primary-200 py-2 rounded font-semibold'
@@ -450,16 +473,6 @@ const EditProductAdmin = ({ close ,data : propsData,fetchProductData}) => {
             )
           }
 
-          {
-            openAddField && (
-              <AddFieldComponent
-                value={fieldName}
-                onChange={(e) => setFieldName(e.target.value)}
-                submit={handleAddField}
-                close={() => setOpenAddField(false)}
-              />
-            )
-          }
         </section>
       </div>
     </section>

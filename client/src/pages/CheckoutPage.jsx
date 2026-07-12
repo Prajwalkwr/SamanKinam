@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useGlobalContext } from '../provider/GlobalProvider'
 import { DisplayPriceInRupees } from '../utils/DisplayPriceInRupees'
 import AddAddress from '../components/AddAddress'
@@ -18,11 +18,15 @@ const CheckoutPage = () => {
   const navigate = useNavigate()
   const [loadingCOD, setLoadingCOD] = useState(false)
   const [loadingOnline, setLoadingOnline] = useState(false)
+  const submittingCODRef = useRef(false)
+  const submittingOnlineRef = useRef(false)
   const [onlineCheckoutUrl, setOnlineCheckoutUrl] = useState("")
   const [showPaymentQrPanel, setShowPaymentQrPanel] = useState(false)
   const [adminPaymentQR, setAdminPaymentQR] = useState("")
   const [paymentCompleted, setPaymentCompleted] = useState(false)
   const [paymentOrderData, setPaymentOrderData] = useState(null)
+  const [paymentCompleteLoading, setPaymentCompleteLoading] = useState(false)
+  const submittingPaymentCompletedRef = useRef(false)
   const customPaymentQR = import.meta.env.VITE_CUSTOM_PAYMENT_QR?.trim() || ""
   const customQRCodeSrc = customPaymentQR && customPaymentQR.startsWith('http')
     ? customPaymentQR
@@ -75,40 +79,47 @@ const CheckoutPage = () => {
       console.log('Address list:', addressList)
       console.log('Selected address ID:', selectedAddressId)
 
-      if (loadingCOD) return; // Prevent multiple clicks
+      if (submittingCODRef.current) return
+      submittingCODRef.current = true
 
       if (!user?._id) {
         toast.error("Please login to place an order")
         navigate('/login')
+        submittingCODRef.current = false
         return
       }
 
       // Validation checks
       if (!cartItemsList || cartItemsList.length === 0) {
         toast.error("Your cart is empty")
+        submittingCODRef.current = false
         return
       }
 
       if (addressList.length === 0) {
         toast.error("Please add a delivery address")
         setOpenAddress(true)
+        submittingCODRef.current = false
         return
       }
 
       const selectedAddressData = addressList.find(address => address._id === selectedAddressId)
       if(!selectedAddressData){
         toast.error("Please select a delivery address")
+        submittingCODRef.current = false
         return
       }
 
       // Validate that address has complete delivery information
       if(!selectedAddressData.address_line || !selectedAddressData.city || !selectedAddressData.country){
         toast.error("Selected address is incomplete. Please ensure address line, city, and country are filled.")
+        submittingCODRef.current = false
         return
       }
       
       if(!selectedAddressData.mobile){
         toast.error("Phone number is required")
+        submittingCODRef.current = false
         return
       }
 
@@ -117,6 +128,7 @@ const CheckoutPage = () => {
       const phoneRegex = /^[0-9]{10}$/
       if(!phoneRegex.test(phoneStr)){
         toast.error("Please enter a valid 10-digit phone number")
+        submittingCODRef.current = false
         return
       }
 
@@ -153,6 +165,7 @@ const CheckoutPage = () => {
       } catch (error) {
         AxiosToastError(error)
       } finally {
+        submittingCODRef.current = false
         setLoadingCOD(false);
       }
   }
@@ -164,11 +177,13 @@ const CheckoutPage = () => {
     console.log('Address list:', addressList)
     console.log('Selected address ID:', selectedAddressId)
 
-    if (loadingOnline) return; // Prevent multiple clicks
+    if (submittingOnlineRef.current) return
+    submittingOnlineRef.current = true
 
     if (!user?._id) {
       toast.error("Please login to place an order")
       navigate('/login')
+      submittingOnlineRef.current = false
       return
     }
 
@@ -176,33 +191,39 @@ const CheckoutPage = () => {
       setOnlineCheckoutUrl(adminPaymentQR)
       setShowPaymentQrPanel(true)
       toast.success("Scan the admin QR code to complete payment.")
+      submittingOnlineRef.current = false
       return
     }
 
     // Validation checks
     if (!cartItemsList || cartItemsList.length === 0) {
       toast.error("Your cart is empty")
+      submittingOnlineRef.current = false
       return
     }
 
     if (addressList.length === 0) {
       toast.error("Please add a delivery address")
       setOpenAddress(true)
+      submittingOnlineRef.current = false
       return
     }
 
     const selectedAddressData = addressList.find(address => address._id === selectedAddressId)
     if(!selectedAddressData){
       toast.error("Please select a delivery address")
+      submittingOnlineRef.current = false
       return
     }
     // Validate that address has complete delivery information
     if(!selectedAddressData.address_line || !selectedAddressData.city || !selectedAddressData.country){
       toast.error("Selected address is incomplete. Please ensure address line, city, and country are filled.")
+      submittingOnlineRef.current = false
       return
     }
     if(!selectedAddressData.mobile){
       toast.error("Phone number is required")
+      submittingOnlineRef.current = false
       return
     }
 
@@ -211,6 +232,7 @@ const CheckoutPage = () => {
     const phoneRegex = /^[0-9]{10}$/
     if(!phoneRegex.test(phoneStr)){
       toast.error("Please enter a valid 10-digit phone number")
+      submittingOnlineRef.current = false
       return
     }
 
@@ -240,18 +262,23 @@ const CheckoutPage = () => {
           setShowPaymentQrPanel(true)
           toast.success("Demo QR code generated. This is for testing purposes.")
         }
-    } catch (error) {
+    } catch {
         // Even if payment API fails, generate a demo QR code
         const demoPaymentUrl = `https://example.com/demo-payment?amount=${totalPrice}&order=demo-${Date.now()}`
         setOnlineCheckoutUrl(demoPaymentUrl)
         setShowPaymentQrPanel(true)
         toast.success("Demo QR code generated for testing.")
     } finally {
+        submittingOnlineRef.current = false
         setLoadingOnline(false);
     }
   }
 
   const handlePaymentCompleted = async () => {
+    if (submittingPaymentCompletedRef.current) return
+    submittingPaymentCompletedRef.current = true
+    setPaymentCompleteLoading(true)
+
     try {
       // For demo purposes, we'll create the order directly
       // In production, this would be handled by Stripe webhooks
@@ -262,6 +289,8 @@ const CheckoutPage = () => {
           addressId: selectedAddressId,
           subTotalAmt: totalPrice,
           totalAmt: totalPrice,
+          payment_status: 'Online Payment',
+          paymentId: 'MANUAL_ONLINE_DEMO',
         }
       })
 
@@ -293,6 +322,9 @@ const CheckoutPage = () => {
       }
     } catch (error) {
       AxiosToastError(error)
+    } finally {
+      submittingPaymentCompletedRef.current = false
+      setPaymentCompleteLoading(false)
     }
   }
 
@@ -307,7 +339,7 @@ const CheckoutPage = () => {
             {
               addressList.map((address, index) => {
                 return (
-                  <label htmlFor={"address" + index} className='block'>
+                  <label key={address._id || index} htmlFor={"address" + index} className='block'>
                     <div className={`border rounded p-3 flex gap-3 hover:bg-red-50 ${address.status ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}>
                       <div>
                         <input
@@ -418,9 +450,10 @@ const CheckoutPage = () => {
               <div className='mt-4 text-center space-y-3'>
                 <button
                   onClick={handlePaymentCompleted}
-                  className='inline-block bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors'
+                  disabled={paymentCompleteLoading}
+                  className='inline-block bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
                 >
-                  Paid
+                  {paymentCompleteLoading ? 'Processing...' : 'Paid'}
                 </button>
               </div>
             </div>

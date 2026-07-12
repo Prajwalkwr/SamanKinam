@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import SummaryApi from '../common/SummaryApi'
 import Axios from '../utils/Axios'
@@ -21,15 +21,6 @@ const ProductDisplayPage = () => {
   const [image,setImage] = useState(0)
   const [loading,setLoading] = useState(false)
   const imageContainer = useRef()
-
-  const randomMinutes = useMemo(() => {
-    const id = String(data._id || data.name || Math.random())
-    let hash = 0
-    for (let i = 0; i < id.length; i += 1) {
-      hash = id.charCodeAt(i) + ((hash << 5) - hash)
-    }
-    return Math.floor(Math.abs(hash) % 60) + 1
-  }, [data._id, data.name])
 
   const fetchProductDetails = async()=>{
     try {
@@ -139,7 +130,6 @@ const ProductDisplayPage = () => {
 
 
         <div className='p-4 lg:pl-7 text-base lg:text-lg'>
-            <p className='bg-green-300 w-fit px-2 rounded-full'>{randomMinutes} Min</p>
             <h2 className='text-lg font-semibold lg:text-3xl'>{data.name}</h2>  
             <p className=''>{data.unit}</p> 
             <Divider/>

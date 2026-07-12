@@ -262,6 +262,10 @@ export const generateInvoiceHTML = (orderData, userEmail, userName) => {
           <div class="thank-you">
             Thank you for shopping with Saman Kinam! 🙏
           </div>
+
+          <div class="info-box" style="margin-top: 10px; border-left-color: #f59e0b; background-color: #fffbeb;">
+            <strong>Cancellation Notice:</strong> If your order is not received or you no longer want it, please contact our support team as soon as possible to request cancellation or further assistance.
+          </div>
         </div>
 
         <div class="footer">

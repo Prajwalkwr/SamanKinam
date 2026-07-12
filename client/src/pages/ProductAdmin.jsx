@@ -61,7 +61,6 @@ const ProductAdmin = () => {
   }
   
   useEffect(() => {
-    fetchProductData()
     fetchProductSummary()
   }, [page])
 
@@ -82,20 +81,14 @@ const ProductAdmin = () => {
     setPage(1)
   }
 
-  useEffect(()=>{
-    let flag = true 
+  useEffect(() => {
+    const delay = search ? 300 : 0
+    const timer = setTimeout(() => {
+      fetchProductData()
+    }, delay)
 
-    const interval = setTimeout(() => {
-      if(flag){
-        fetchProductData()
-        flag = false
-      }
-    }, 300);
-
-    return ()=>{
-      clearTimeout(interval)
-    }
-  },[search])
+    return () => clearTimeout(timer)
+  }, [search, page])
   
   const totalProducts = productData.length
   const totalStock = productData.reduce((sum, product) => sum + (Number(product.stock) || 0), 0)
@@ -116,13 +109,6 @@ const ProductAdmin = () => {
                     onChange={handleOnChange}
                   />
                 </div>
-          <button
-            type='button'
-            onClick={fetchProductData}
-            className='bg-slate-100 text-slate-800 px-3 py-2 rounded border border-slate-300 hover:bg-slate-200'
-          >
-            Refresh
-          </button>
         </div>
         {
           loading && (
@@ -144,14 +130,9 @@ const ProductAdmin = () => {
             <p className='text-2xl font-semibold'>{summaryData.totalStock}</p>
           </div>
           <div className='bg-white rounded p-4 shadow-sm border border-slate-200'>
-            <div className='flex items-center justify-between gap-2'>
-              <div>
-                <p className='text-sm text-slate-500'>Out of stock products</p>
-                <p className='text-2xl font-semibold'>{summaryData.outOfStockCount}</p>
-              </div>
-              <div className='text-xs px-2 py-1 rounded-full bg-red-100 text-red-700'>
-                {(summaryData.outOfStockCount > 0 || summaryData.lowStockCount > 0) ? 'Review' : 'Good'}
-              </div>
+            <div>
+              <p className='text-sm text-slate-500'>Out of stock products</p>
+              <p className='text-2xl font-semibold'>{summaryData.outOfStockCount}</p>
             </div>
             <div className='mt-3 text-sm text-slate-500'>Low stock: {summaryData.lowStockCount}</div>
           </div>

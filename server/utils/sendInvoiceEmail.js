@@ -23,7 +23,7 @@ const generateInvoiceText = (orderData, userName) => {
     ? `${street}, ${address.city || ''}, ${address.state || ''} ${address.pincode || ''}`
     : 'Address not available';
 
-  return `Invoice ID: ${invoiceId}\nDate: ${createdDate}\nCustomer: ${userName || 'Customer'}\nPayment status: ${paymentStatus}\n\nItems:\n${itemLines}\n\nDelivery Address:\n${addressText}\n\nTotal Amount: Rs ${totalAmount.toFixed(2)}\n\nThank you for your order from Saman Kinam.`;
+  return `Invoice ID: ${invoiceId}\nDate: ${createdDate}\nCustomer: ${userName || 'Customer'}\nPayment status: ${paymentStatus}\n\nItems:\n${itemLines}\n\nDelivery Address:\n${addressText}\n\nTotal Amount: Rs ${totalAmount.toFixed(2)}\n\nCancellation Notice: If your order is not received or you no longer want it, please contact our support team as soon as possible to request cancellation or assistance.\n\nThank you for your order from Saman Kinam.`;
 };
 
 export const sendInvoiceEmail = async (orderData, userId) => {

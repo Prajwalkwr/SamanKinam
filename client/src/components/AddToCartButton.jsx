@@ -8,6 +8,8 @@ import Loading from './Loading'
 import { useSelector } from 'react-redux'
 import { FaMinus, FaPlus } from "react-icons/fa6";
 
+const CART_TOAST_ID = 'cart-action'
+
 const AddToCartButton = ({ data }) => {
     const { fetchCartItem, updateCartItem, deleteCartItem } = useGlobalContext()
     const [loading, setLoading] = useState(false)
@@ -27,12 +29,12 @@ const AddToCartButton = ({ data }) => {
 
         // Check if product is available before adding to cart
         if(!data?.stock || data?.stock <= 0 || data?.publish === false){
-            toast.error(`${data?.name || 'Product'} is not available`)
+            toast.error(`${data?.name || 'Product'} is not available`, { id: CART_TOAST_ID })
             return
         }
 
         if (reachedMaxLimit) {
-            toast.error(`Cannot add more than ${MAX_CART_ITEM_QTY} items of this product`)
+            toast.error(`Cannot add more than ${MAX_CART_ITEM_QTY} items of this product`, { id: CART_TOAST_ID })
             return
         }
 
@@ -49,7 +51,7 @@ const AddToCartButton = ({ data }) => {
             const { data: responseData } = response
 
             if (responseData.success) {
-                toast.success(responseData.message)
+                toast.success(responseData.message, { id: CART_TOAST_ID })
                 if (fetchCartItem) {
                     fetchCartItem()
                 }
@@ -78,7 +80,7 @@ const AddToCartButton = ({ data }) => {
         e.stopPropagation()
 
         if (reachedStockLimit || reachedMaxLimit) {
-            toast.error(`Cannot add more than ${Math.min(MAX_CART_ITEM_QTY, maxStock || MAX_CART_ITEM_QTY)} items of this product`)
+            toast.error(`Cannot add more than ${Math.min(MAX_CART_ITEM_QTY, maxStock || MAX_CART_ITEM_QTY)} items of this product`, { id: CART_TOAST_ID })
             return
         }
     

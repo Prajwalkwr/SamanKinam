@@ -11,6 +11,7 @@ import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
 import AxiosToastError from '../utils/AxiosToastError';
 import successAlert from '../utils/SuccessAlert';
+import toast from 'react-hot-toast'
 import { useEffect } from 'react';
 
 const UploadProduct = () => {
@@ -34,19 +35,49 @@ const UploadProduct = () => {
   const [selectSubCategory,setSelectSubCategory] = useState("")
   const allSubCategory = useSelector(state => state.product.allSubCategory)
 
+  const filteredSubCategory = allSubCategory.filter((sub) => {
+    if (data.category.length === 0) return true
+    return sub.category?.some((cat) => data.category.some((selected) => selected._id === cat._id))
+  })
+
+  const filteredCategory = data.subCategory.length === 0
+    ? allCategory
+    : allCategory.filter((cat) =>
+        data.subCategory.some((sub) =>
+          sub.category?.some((subCat) => subCat._id === cat._id)
+        )
+      )
+
   const [openAddField,setOpenAddField] = useState(false)
   const [fieldName,setFieldName] = useState("")
 
 
   const handleChange = (e)=>{
-    const { name, value} = e.target 
+    const { name, value} = e.target
+    const numericFields = ['unit', 'stock', 'price', 'costPrice', 'discount']
 
-    setData((preve)=>{
-      return{
-          ...preve,
-          [name]  : value
-      }
-    })
+    if (name === 'name') {
+      const filteredValue = value.replace(/[^A-Za-z ]/g, '')
+      setData((preve)=>({
+        ...preve,
+        [name]: filteredValue
+      }))
+      return
+    }
+
+    if (numericFields.includes(name)) {
+      const filteredValue = value.replace(/[^0-9]/g, '')
+      setData((preve)=>({
+        ...preve,
+        [name]: filteredValue
+      }))
+      return
+    }
+
+    setData((preve)=>({
+      ...preve,
+      [name]: value
+    }))
   }
 
   const handleUploadImage = async(e)=>{
@@ -91,9 +122,15 @@ const UploadProduct = () => {
 
   const handleRemoveCategory = async(index)=>{
     data.category.splice(index,1)
+    const remainingCategoryIds = data.category.map((cat) => cat._id)
+    const filteredSubCategory = data.subCategory.filter((sub) =>
+      sub.category?.some((cat) => remainingCategoryIds.includes(cat._id))
+    )
+
     setData((preve)=>{
       return{
-        ...preve
+        ...preve,
+        subCategory : filteredSubCategory
       }
     })
   }
@@ -123,6 +160,36 @@ const UploadProduct = () => {
   const handleSubmit = async(e)=>{
     e.preventDefault()
     console.log("data",data)
+
+    if (!data.name || !/^[A-Za-z ]+$/.test(data.name.trim())) {
+      toast.error('Name can only contain letters and spaces')
+      return
+    }
+
+    if (!data.unit || Number(data.unit) < 0) {
+      toast.error("Unit must be a non-negative number")
+      return
+    }
+
+    if (Number(data.stock) < 0) {
+      toast.error("Stock cannot be negative")
+      return
+    }
+
+    if (data.price !== '' && Number(data.price) < 0) {
+      toast.error("Price cannot be negative")
+      return
+    }
+
+    if (data.costPrice !== '' && Number(data.costPrice) < 0) {
+      toast.error("Cost price cannot be negative")
+      return
+    }
+
+    if (data.discount !== '' && Number(data.discount) < 0) {
+      toast.error("Discount cannot be negative")
+      return
+    }
 
     const payload = {
       ...data,
@@ -255,8 +322,11 @@ const UploadProduct = () => {
                       value={selectCategory}
                       onChange={(e)=>{
                         const value = e.target.value 
+                        if (!value) return
                         const category = allCategory.find(el => el._id === value )
-                        
+                        if (!category) return
+                        if (data.category.some((item) => item._id === value)) return
+
                         setData((preve)=>{
                           return{
                             ...preve,
@@ -268,9 +338,9 @@ const UploadProduct = () => {
                     >
                       <option value={""}>Select Category</option>
                       {
-                        allCategory.map((c,index)=>{
+                        filteredCategory.map((c,index)=>{
                           return(
-                            <option value={c?._id}>{c.name}</option>
+                            <option value={c?._id} key={c?._id || index}>{c.name}</option>
                           )
                         })
                       }
@@ -299,7 +369,10 @@ const UploadProduct = () => {
                       value={selectSubCategory}
                       onChange={(e)=>{
                         const value = e.target.value 
+                        if (!value) return
                         const subCategory = allSubCategory.find(el => el._id === value )
+                        if (!subCategory) return
+                        if (data.subCategory.some((item) => item._id === value)) return
 
                         setData((preve)=>{
                           return{
@@ -312,9 +385,9 @@ const UploadProduct = () => {
                     >
                       <option value={""} className='text-neutral-600'>Select Sub Category</option>
                       {
-                        allSubCategory.map((c,index)=>{
+                        filteredSubCategory.map((c,index)=>{
                           return(
-                            <option value={c?._id}>{c.name}</option>
+                            <option value={c?._id} key={c?._id || index}>{c.name}</option>
                           )
                         })
                       }
@@ -340,7 +413,9 @@ const UploadProduct = () => {
                   <label htmlFor='unit' className='font-medium'>Unit</label>
                   <input 
                     id='unit'
-                    type='text'
+                    type='number'
+                    inputMode='numeric'
+                    min={0}
                     placeholder='Enter product unit'
                     name='unit'
                     value={data.unit}
@@ -355,6 +430,8 @@ const UploadProduct = () => {
                   <input 
                     id='stock'
                     type='number'
+                    min={0}
+                    inputMode='numeric'
                     placeholder='Enter product stock'
                     name='stock'
                     value={data.stock}
@@ -369,6 +446,8 @@ const UploadProduct = () => {
                   <input 
                     id='price'
                     type='number'
+                    min={0}
+                    inputMode='numeric'
                     placeholder='Enter product price'
                     name='price'
                     value={data.price}
@@ -383,6 +462,8 @@ const UploadProduct = () => {
                   <input 
                     id='costPrice'
                     type='number'
+                    min={0}
+                    inputMode='numeric'
                     placeholder='Enter product cost price'
                     name='costPrice'
                     value={data.costPrice}
@@ -396,6 +477,8 @@ const UploadProduct = () => {
                   <input 
                     id='discount'
                     type='number'
+                    min={0}
+                    inputMode='numeric'
                     placeholder='Enter product discount'
                     name='discount'
                     value={data.discount}

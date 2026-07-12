@@ -149,6 +149,7 @@ const SubCategoryPage = () => {
             <UploadSubCategoryModel 
               close={()=>setOpenAddSubCategory(false)}
               fetchData={fetchSubCategory}
+              existingData={data}
             />
           )
         }
@@ -164,6 +165,7 @@ const SubCategoryPage = () => {
             data={editData} 
             close={()=>setOpenEdit(false)}
             fetchData={fetchSubCategory}
+            existingData={data}
           />
         }
 

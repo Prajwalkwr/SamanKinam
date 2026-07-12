@@ -33,6 +33,14 @@ export const createProductController = async(request,response)=>{
             })
         }
 
+        if (Number(stock) < 0 || Number(price) < 0 || Number(discount) < 0 || Number(costPrice) < 0) {
+            return response.status(400).json({
+                message: "Stock, price, discount, and cost price cannot be negative",
+                error: true,
+                success: false
+            })
+        }
+
         const normalizedName = name.trim()
         const duplicateProduct = await ProductModel.findOne({
             _id: { $ne: null },

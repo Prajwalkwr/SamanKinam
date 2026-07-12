@@ -5,6 +5,7 @@ import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
 import toast from 'react-hot-toast'
 import AxiosToastError from '../utils/AxiosToastError';
+import { useSelector } from 'react-redux';
 
 const EditCategory = ({close, fetchData,data : CategoryData}) => {
     const [data,setData] = useState({
@@ -13,6 +14,8 @@ const EditCategory = ({close, fetchData,data : CategoryData}) => {
         image : CategoryData.image
     })
     const [loading,setLoading] = useState(false)
+    const allCategory = useSelector(state => state.product.allCategory)
+    const nameRegex = /^[A-Za-z ]+$/
 
     const handleOnChange = (e)=>{
         const { name, value} = e.target
@@ -27,12 +30,31 @@ const EditCategory = ({close, fetchData,data : CategoryData}) => {
     const handleSubmit = async(e)=>{
         e.preventDefault()
 
+        const name = data.name.toString().trim()
+        if (!name) {
+            toast.error('Category name is required')
+            return
+        }
+        if (!nameRegex.test(name)) {
+            toast.error('Category name must contain only letters and spaces')
+            return
+        }
+        const existingNames = (allCategory || [])
+            .filter(category => category._id !== data._id)
+            .map(category => category.name.toLowerCase().trim())
+        if (existingNames.includes(name.toLowerCase())) {
+            toast.error('Category with this name already exists')
+            return
+        }
 
         try {
             setLoading(true)
             const response = await Axios({
                 ...SummaryApi.updateCategory,
-                data : data
+                data : {
+                    ...data,
+                    name
+                }
             })
             const { data : responseData } = response
 

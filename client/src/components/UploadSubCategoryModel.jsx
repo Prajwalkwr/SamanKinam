@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { IoClose } from "react-icons/io5";
 import uploadImage from '../utils/UploadImage';
 import { useSelector } from 'react-redux';
@@ -8,13 +8,16 @@ import toast from 'react-hot-toast';
 import AxiosToastError from '../utils/AxiosToastError';
 import { useEffect } from 'react';
 
-const UploadSubCategoryModel = ({close, fetchData}) => {
+const UploadSubCategoryModel = ({close, fetchData, existingData = []}) => {
     const [subCategoryData,setSubCategoryData] = useState({
         name : "",
         image : "",
         category : []
     })
+    const [loading, setLoading] = useState(false)
+    const submittingRef = useRef(false)
     const allCategory = useSelector(state => state.product.allCategory)
+    const nameRegex = /^[A-Za-z ]+$/
 
     const handleChange = (e)=>{
         const { name, value} = e.target 
@@ -67,10 +70,39 @@ const UploadSubCategoryModel = ({close, fetchData}) => {
     const handleSubmitSubCategory = async(e)=>{
         e.preventDefault()
 
+        if (submittingRef.current) return
+        submittingRef.current = true
+        setLoading(true)
+
+        const name = subCategoryData.name.toString().trim()
+        if (!name) {
+            toast.error('Sub-category name is required')
+            submittingRef.current = false
+            setLoading(false)
+            return
+        }
+        if (!nameRegex.test(name)) {
+            toast.error('Sub-category name must contain only letters and spaces')
+            submittingRef.current = false
+            setLoading(false)
+            return
+        }
+
+        const existingNames = existingData.map(sub => sub.name.toLowerCase().trim())
+        if (existingNames.includes(name.toLowerCase())) {
+            toast.error('Sub-category with this name already exists', { id: 'subcat-duplicate' })
+            submittingRef.current = false
+            setLoading(false)
+            return
+        }
+
         try {
             const response = await Axios({
                 ...SummaryApi.createSubCategory,
-                data : subCategoryData
+                data : {
+                    ...subCategoryData,
+                    name
+                }
             })
 
             const { data : responseData } = response
@@ -88,6 +120,9 @@ const UploadSubCategoryModel = ({close, fetchData}) => {
 
         } catch (error) {
             AxiosToastError(error)
+        } finally {
+            submittingRef.current = false
+            setLoading(false)
         }
     }
 
@@ -192,12 +227,14 @@ const UploadSubCategoryModel = ({close, fetchData}) => {
                     </div>
 
                     <button
+                        type='submit'
+                        disabled={loading}
                         className={`px-4 py-2 border
                             ${subCategoryData?.name && subCategoryData?.image && subCategoryData?.category[0] ? "bg-primary-200 hover:bg-primary-100" : "bg-gray-200"}    
-                            font-semibold
+                            font-semibold ${loading ? 'opacity-50 cursor-not-allowed' : ''}
                         `}
                     >
-                        Submit
+                        {loading ? 'Submitting...' : 'Submit'}
                     </button>
                     
             </form>

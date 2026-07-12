@@ -103,6 +103,10 @@ export const seedWebsiteData = async () => {
         console.log(`Seeded ${products.length} default products.`)
       }
     }
+
+    // Ensure text index is created for product search
+    await ProductModel.collection.createIndex({ name: 'text', description: 'text' }, { weights: { name: 10, description: 5 } })
+    console.log('Text index ensured for ProductModel')
   } catch (error) {
     console.error('Failed to seed website data:', error)
   }

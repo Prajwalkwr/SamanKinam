@@ -93,6 +93,7 @@ const CategoryPage = () => {
                                 src={category.image}
                                 className='w-full object-scale-down'
                             />
+                            <p className='text-center text-sm py-1 font-medium'>{category.name}</p>
                             <div className='items-center h-9 flex gap-2'>
                                 <button onClick={()=>{
                                     setOpenEdit(true)

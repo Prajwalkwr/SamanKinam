@@ -84,7 +84,17 @@ function App() {
           <Outlet/>
       </main>
       <Footer/>
-      <Toaster/>
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        gutter={8}
+        limit={1}
+        toastOptions={{
+          style: {
+            minWidth: '250px',
+          },
+        }}
+      />
       {
         location.pathname !== '/checkout' && (
           <CartMobileLink/>

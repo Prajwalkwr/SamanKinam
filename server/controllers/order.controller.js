@@ -9,11 +9,19 @@ import { sendInvoiceEmail } from "../utils/sendInvoiceEmail.js";
 
 const MAX_ORDER_ITEM_QTY = 20
 
+const normalizePaymentStatus = (status = '') => {
+    const normalized = String(status).trim().toLowerCase()
+    if (normalized === 'cod' || normalized === 'cash on delivery') return 'COD'
+    if (normalized === 'online payment' || normalized === 'paid' || normalized === 'completed') return 'Online Payment'
+    return status || 'COD'
+}
+
  export async function CashOnDeliveryOrderController(request,response){
     try {
         const userId = request.userId // auth middleware 
-        const { list_items, totalAmt, addressId,subTotalAmt } = request.body 
+        const { list_items, totalAmt, addressId, subTotalAmt, payment_status, paymentStatus, paymentId } = request.body 
         const invoiceId = `INV-${new mongoose.Types.ObjectId()}`
+        const paymentStatusValue = normalizePaymentStatus(payment_status || paymentStatus)
 
         // Validate that all items are still available and within the per-item order limit
         const unavailableItems = []
@@ -70,8 +78,8 @@ const MAX_ORDER_ITEM_QTY = 20
                 quantity : el.quantity || 1,
                 unitPrice,
                 costPrice: Number(el.productId.costPrice || 0),
-                paymentId : "",
-                payment_status : "COD",
+                paymentId : paymentId || "",
+                payment_status : paymentStatusValue,
                 delivery_address : addressId ,
                 subTotalAmt  : itemTotal,
                 totalAmt  :  itemTotal,

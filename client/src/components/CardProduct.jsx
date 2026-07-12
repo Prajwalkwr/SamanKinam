@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import { DisplayPriceInRupees } from '../utils/DisplayPriceInRupees'
 import { Link } from 'react-router-dom'
 import { valideURLConvert } from '../utils/valideURLConvert'
@@ -14,18 +14,10 @@ import AddToCartButton from './AddToCartButton'
 
 const CardProduct = ({data}) => {
     const url = `/product/${valideURLConvert(data.name)}-${data._id}`
-    const randomMinutes = useMemo(() => {
-      const id = String(data._id || data.name || Math.random())
-      let hash = 0
-      for (let i = 0; i < id.length; i += 1) {
-        hash = id.charCodeAt(i) + ((hash << 5) - hash)
-      }
-      return Math.floor(Math.abs(hash) % 60) + 1
-    }, [data._id, data.name])
   
   return (
-    <Link to={url} className='border py-2 lg:p-4 flex flex-col gap-1 lg:gap-3 min-w-36 lg:min-w-52 rounded cursor-pointer bg-white h-full' >
-      <div className='min-h-20 w-full max-h-24 lg:max-h-32 rounded overflow-hidden bg-slate-100'>
+    <Link to={url} className='border p-2 lg:p-4 flex flex-col gap-2 lg:gap-3 rounded cursor-pointer bg-white h-full w-full min-h-[430px]' >
+      <div className='aspect-[4/3] w-full rounded overflow-hidden bg-slate-100'>
             <img 
                 src={getFirstImage(data.image) || noImage}
                 className='w-full h-full object-cover object-center'
@@ -33,9 +25,6 @@ const CardProduct = ({data}) => {
             />
       </div>
       <div className='flex items-center gap-1'>
-        <div className='rounded text-xs w-fit p-[1px] px-2 text-red-600 bg-red-50'>
-              {randomMinutes} min
-        </div>
         <div>
             {
               Boolean(data.discount) && (
@@ -48,11 +37,10 @@ const CardProduct = ({data}) => {
         {data.name}
       </div>
       <div className='w-fit gap-1 px-2 lg:px-0 text-sm lg:text-base'>
-        {data.unit} 
-        
+        {data.unit}
       </div>
 
-      <div className='px-2 lg:px-0 flex flex-col gap-2 text-sm lg:text-base mt-auto'>
+      <div className='px-2 lg:px-0 flex flex-col gap-2 text-sm lg:text-base'>
         <div className='flex items-center justify-between gap-1'>
           <div className='font-semibold'>
               {DisplayPriceInRupees(pricewithDiscount(data.price,data.discount))} 
