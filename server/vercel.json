@@ -3,7 +3,7 @@
   "buildCommand": "npm run build:vercel",
   "outputDirectory": "public",
   "functions": {
-    "api/index.js": { "maxDuration": 60 }
+    "api/index.js": { "maxDuration": 60, "includeFiles": "data/**" }
   },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api" },

@@ -7,6 +7,7 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "seed": "node seed.js",
+    "export-catalog": "node scripts/export-catalog.js",
     "build:vercel": "npm run build --prefix ../client && node scripts/copy-client-build.js"
   },
   "author": "",

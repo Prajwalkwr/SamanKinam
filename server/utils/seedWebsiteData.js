@@ -1,10 +1,31 @@
 import bcryptjs from 'bcryptjs'
+import mongoose from 'mongoose'
+import { existsSync, readFileSync } from 'fs'
+import { fileURLToPath } from 'url'
 import CategoryModel from '../models/category.model.js'
 import ProductModel from '../models/product.model.js'
 import UserModel from '../models/user.model.js'
 
 // Fixed ids keep the seeded data identical across serverless instances that each run their own in-memory database
 const defaultAdminId = '66a000000000000000000001'
+
+export const catalogCollections = ['categories', 'subcategories', 'products', 'paymentsettings']
+const catalogFile = fileURLToPath(new URL('../data/catalog.json', import.meta.url))
+
+const seedCatalogSnapshot = async () => {
+  if (!existsSync(catalogFile)) return false
+
+  const catalog = mongoose.mongo.BSON.EJSON.parse(readFileSync(catalogFile, 'utf8'), { relaxed: false })
+  for (const name of catalogCollections) {
+    const documents = catalog[name] || []
+    const collection = mongoose.connection.db.collection(name)
+    if (documents.length > 0 && await collection.countDocuments() === 0) {
+      await collection.insertMany(documents, { ordered: false })
+      console.log(`Seeded ${documents.length} ${name} from data/catalog.json.`)
+    }
+  }
+  return true
+}
 
 const defaultCategories = [
   { _id: '66a000000000000000000101', name: 'Atta, Rice & Dal', image: 'https://res.cloudinary.com/dljwfy0pe/image/upload/v1725888087/binkeyit/rqs2ac9wwpdkcbzd7om6.png' },
@@ -90,12 +111,14 @@ export const seedWebsiteData = async () => {
     const categoryCount = await CategoryModel.countDocuments()
     const productCount = await ProductModel.countDocuments()
 
-    if (categoryCount === 0) {
+    const seededSnapshot = categoryCount === 0 && productCount === 0 && await seedCatalogSnapshot()
+
+    if (!seededSnapshot && categoryCount === 0) {
       const categories = await CategoryModel.insertMany(defaultCategories)
       console.log(`Seeded ${categories.length} default categories.`)
     }
 
-    if (productCount === 0) {
+    if (!seededSnapshot && productCount === 0) {
       const categories = await CategoryModel.find()
       if (categories.length > 0) {
         const productsToInsert = defaultProducts.map((product) => {
