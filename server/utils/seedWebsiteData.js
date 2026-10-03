@@ -3,15 +3,19 @@ import CategoryModel from '../models/category.model.js'
 import ProductModel from '../models/product.model.js'
 import UserModel from '../models/user.model.js'
 
+// Fixed ids keep the seeded data identical across serverless instances that each run their own in-memory database
+const defaultAdminId = '66a000000000000000000001'
+
 const defaultCategories = [
-  { name: 'Atta, Rice & Dal', image: 'https://res.cloudinary.com/dljwfy0pe/image/upload/v1725888087/binkeyit/rqs2ac9wwpdkcbzd7om6.png' },
-  { name: 'Baby Care', image: 'https://res.cloudinary.com/dljwfy0pe/image/upload/v1725882539/binkeyit/xgw4tbydzhakirfzm8fo.png' },
-  { name: 'Bakery & Biscuits', image: 'https://res.cloudinary.com/dljwfy0pe/image/upload/v1725882610/binkeyit/uz3opyestu20xwosazao.png' },
-  { name: 'Fruits & Vegetables', image: 'https://res.cloudinary.com/dljwfy0pe/image/upload/v1725955316/binkeyit/lmvmyyjdm6vdgwhqazve.png' }
+  { _id: '66a000000000000000000101', name: 'Atta, Rice & Dal', image: 'https://res.cloudinary.com/dljwfy0pe/image/upload/v1725888087/binkeyit/rqs2ac9wwpdkcbzd7om6.png' },
+  { _id: '66a000000000000000000102', name: 'Baby Care', image: 'https://res.cloudinary.com/dljwfy0pe/image/upload/v1725882539/binkeyit/xgw4tbydzhakirfzm8fo.png' },
+  { _id: '66a000000000000000000103', name: 'Bakery & Biscuits', image: 'https://res.cloudinary.com/dljwfy0pe/image/upload/v1725882610/binkeyit/uz3opyestu20xwosazao.png' },
+  { _id: '66a000000000000000000104', name: 'Fruits & Vegetables', image: 'https://res.cloudinary.com/dljwfy0pe/image/upload/v1725955316/binkeyit/lmvmyyjdm6vdgwhqazve.png' }
 ]
 
 const defaultProducts = [
   {
+    _id: '66a000000000000000000201',
     name: 'Whole Wheat Atta',
     image: ['https://res.cloudinary.com/dljwfy0pe/image/upload/v1725888087/binkeyit/rqs2ac9wwpdkcbzd7om6.png'],
     unit: '5 kg',
@@ -22,6 +26,7 @@ const defaultProducts = [
     more_details: { brand: 'Saman Kinam', category: 'Atta, Rice & Dal' }
   },
   {
+    _id: '66a000000000000000000202',
     name: 'Baby Diaper Pack',
     image: ['https://res.cloudinary.com/dljwfy0pe/image/upload/v1725882539/binkeyit/xgw4tbydzhakirfzm8fo.png'],
     unit: '1 pack',
@@ -32,6 +37,7 @@ const defaultProducts = [
     more_details: { brand: 'Saman Kinam', category: 'Baby Care' }
   },
   {
+    _id: '66a000000000000000000203',
     name: 'Classic Chocolate Cookies',
     image: ['https://res.cloudinary.com/dljwfy0pe/image/upload/v1725882610/binkeyit/uz3opyestu20xwosazao.png'],
     unit: '200 g',
@@ -42,6 +48,7 @@ const defaultProducts = [
     more_details: { brand: 'Saman Kinam', category: 'Bakery & Biscuits' }
   },
   {
+    _id: '66a000000000000000000204',
     name: 'Fresh Organic Apples',
     image: ['https://res.cloudinary.com/dljwfy0pe/image/upload/v1725955316/binkeyit/lmvmyyjdm6vdgwhqazve.png'],
     unit: '1 kg',
@@ -67,6 +74,7 @@ export const seedWebsiteData = async () => {
         const hashedPassword = await bcryptjs.hash(adminPassword, salt)
 
         await new UserModel({
+          _id: defaultAdminId,
           name: 'Admin',
           email: adminEmail,
           password: hashedPassword,
