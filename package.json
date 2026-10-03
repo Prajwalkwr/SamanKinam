@@ -2,7 +2,6 @@
   "name": "saman-kinam-workspace",
   "version": "1.0.0",
   "private": true,
-  "type": "module",
   "scripts": {
     "dev": "concurrently \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
     "server": "npm --prefix server run dev",

@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: saman-kinam-api
+    runtime: node
+    plan: free
+    region: singapore
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node index.js
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: FRONTEND_URL
+        value: https://saman-kinam.vercel.app
+      - key: SECRET_KEY_ACCESS_TOKEN
+        generateValue: true
+      - key: SECRET_KEY_REFRESH_TOKEN
+        generateValue: true
+      - key: MONGODB_URI
+        sync: false
