@@ -21,6 +21,8 @@ if (isHosted && isLocalUri(mongoUri)) {
 }
 if (isServerless) {
   process.env.MONGOMS_DOWNLOAD_DIR ||= '/tmp/mongodb-binaries'
+  // MongoDB 8.x aborts on start inside the Vercel sandbox
+  process.env.MONGOMS_VERSION ||= '7.0.14'
 }
 let memoryServer
 let connectionPromise
