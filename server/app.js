@@ -29,7 +29,9 @@ const corsOptions = {
             process.env.FRONTEND_URL
         ].filter(Boolean)
         
-        if (!origin || allowedOrigins.includes(origin)) {
+        const isLocalhost = /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin || '')
+
+        if (!origin || isLocalhost || allowedOrigins.includes(origin)) {
             callback(null, true)
         } else {
             callback(null, allowedOrigins[0])
