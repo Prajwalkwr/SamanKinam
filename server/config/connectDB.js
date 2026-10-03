@@ -14,9 +14,13 @@ const isInvalidAtlasUri = (uri) => {
 const isLocalUri = (uri) => /\/\/(127\.0\.0\.1|localhost)(:|\/|$)/.test(uri || '')
 
 const invalidAtlasUri = rawMongoUri && isInvalidAtlasUri(rawMongoUri)
-let mongoUri = invalidAtlasUri ? null : rawMongoUri || (isServerless || isRender ? null : defaultLocalUri)
-if (isRender && isLocalUri(mongoUri)) {
+const isHosted = isServerless || isRender
+let mongoUri = invalidAtlasUri ? null : rawMongoUri || (isHosted ? null : defaultLocalUri)
+if (isHosted && isLocalUri(mongoUri)) {
   mongoUri = null
+}
+if (isServerless) {
+  process.env.MONGOMS_DOWNLOAD_DIR ||= '/tmp/mongodb-binaries'
 }
 let memoryServer
 let connectionPromise
@@ -37,10 +41,6 @@ async function connectToMemoryServer(reason) {
 }
 
 async function connect(){
-    if (isServerless && !mongoUri) {
-        throw new Error('MONGODB_URI is missing or invalid. Set it in the Vercel project environment variables.')
-    }
-
     if (!mongoUri) {
         await connectToMemoryServer('MONGODB_URI is not set to a reachable database.')
         return
