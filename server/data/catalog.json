@@ -199,26 +199,6 @@
       "__v": {
         "$numberInt": "0"
       }
-    },
-    {
-      "_id": {
-        "$oid": "6a8ae1111fcd19a637f48a1d"
-      },
-      "name": "jitftiyvtg",
-      "image": "http://res.cloudinary.com/dhbsmo8gy/image/upload/v1787486435/binkeyit/jfigr4dwnwin1905hxae.png",
-      "createdAt": {
-        "$date": {
-          "$numberLong": "1787486481457"
-        }
-      },
-      "updatedAt": {
-        "$date": {
-          "$numberLong": "1787486525214"
-        }
-      },
-      "__v": {
-        "$numberInt": "0"
-      }
     }
   ],
   "subcategories": [
