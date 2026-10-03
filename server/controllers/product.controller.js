@@ -141,7 +141,7 @@ export const getProductController = async(request,response)=>{
 
 export const getProductByCategory = async(request,response)=>{
     try {
-        const { id } = request.body 
+        const id = request.body?.id || request.query.id 
 
         if(!id){
             return response.status(400).json({

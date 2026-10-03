@@ -79,7 +79,7 @@ const SummaryApi = {
     },
     getSubCategory : {
         url : '/api/subcategory/get',
-        method : 'post'
+        method : 'get'
     },
     updateSubCategory : {
         url : '/api/subcategory/update',
@@ -103,7 +103,7 @@ const SummaryApi = {
     },
     getProductByCategory : {
         url : '/api/product/get-product-by-category',
-        method : 'post'
+        method : 'get'
     },
     getProductByCategoryAndSubCategory : {
         url : '/api/product/get-product-by-category-and-subcategory',

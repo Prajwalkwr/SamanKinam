@@ -2,6 +2,7 @@ import { Router } from 'express'
 import auth from '../middleware/auth.js'
 import { createProductController, deleteProductDetails, getProductByCategory, getProductByCategoryAndSubCategory, getProductController, getProductDetails, getProductSummary, searchProduct, updateProductDetails } from '../controllers/product.controller.js'
 import { admin } from '../middleware/Admin.js'
+import cachePublic from '../middleware/cachePublic.js'
 
 const productRouter = Router()
 
@@ -9,6 +10,7 @@ productRouter.post("/create",auth,admin,createProductController)
 productRouter.post('/get',getProductController)
 productRouter.get('/summary',auth,admin,getProductSummary)
 productRouter.post("/get-product-by-category",getProductByCategory)
+productRouter.get("/get-product-by-category",cachePublic,getProductByCategory)
 productRouter.post('/get-product-by-category-and-subcategory',getProductByCategoryAndSubCategory)
 productRouter.post('/get-product-details',getProductDetails)
 

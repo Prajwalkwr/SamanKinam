@@ -1,31 +1,17 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
 import Home from "../pages/Home";
-import SearchPage from "../pages/SearchPage";
-import Login from "../pages/Login";
-import Register from "../pages/Register";
-import ForgotPassword from "../pages/ForgotPassword";
-import OtpVerification from "../pages/OtpVerification";
-import ResetPassword from "../pages/ResetPassword";
-import UserMenuMobile from "../pages/UserMenuMobile";
-import Dashboard from "../layouts/Dashboard";
-import Profile from "../pages/Profile";
-import MyOrders from "../pages/MyOrders";
-import Address from "../pages/Address";
-import CategoryPage from "../pages/CategoryPage";
-import SubCategoryPage from "../pages/SubCategoryPage";
-import UploadProduct from "../pages/UploadProduct";
-import ProductAdmin from "../pages/ProductAdmin";
-import AdminUsers from "../pages/AdminUsers";
-import PaymentQRCodeAdmin from "../pages/PaymentQRCodeAdmin";
-import SalesReport from "../pages/SalesReport";
 import AdminPermision from "../layouts/AdminPermision";
-import ProductListPage from "../pages/ProductListPage";
-import ProductDisplayPage from "../pages/ProductDisplayPage";
-import CartMobile from "../pages/CartMobile";
-import CheckoutPage from "../pages/CheckoutPage";
-import Success from "../pages/Success";
-import Cancel from "../pages/Cancel";
+
+const page = (load) => async () => {
+    const { default: Component } = await load()
+    return { Component }
+}
+
+const adminPage = (load) => async () => {
+    const { default: Component } = await load()
+    return { element : <AdminPermision><Component/></AdminPermision> }
+}
 
 const router = createBrowserRouter([
     {
@@ -38,75 +24,75 @@ const router = createBrowserRouter([
             },
             {
                 path : "search",
-                element : <SearchPage/>
+                lazy : page(() => import("../pages/SearchPage"))
             },
             {
                 path : 'login',
-                element : <Login/>
+                lazy : page(() => import("../pages/Login"))
             },
             {
                 path : "register",
-                element : <Register/>
+                lazy : page(() => import("../pages/Register"))
             },
             {
                 path : "forgot-password",
-                element : <ForgotPassword/>
+                lazy : page(() => import("../pages/ForgotPassword"))
             },
             {
                 path : "verification-otp",
-                element : <OtpVerification/>
+                lazy : page(() => import("../pages/OtpVerification"))
             },
             {
                 path : "reset-password",
-                element : <ResetPassword/>
+                lazy : page(() => import("../pages/ResetPassword"))
             },
             {
                 path : "user",
-                element : <UserMenuMobile/>
+                lazy : page(() => import("../pages/UserMenuMobile"))
             },
             {
                 path : "dashboard",
-                element : <Dashboard/>,
+                lazy : page(() => import("../layouts/Dashboard")),
                 children : [
                     {
                         path : "profile",
-                        element : <Profile/>
+                        lazy : page(() => import("../pages/Profile"))
                     },
                     {
                         path : "myorders",
-                        element : <MyOrders/>
+                        lazy : page(() => import("../pages/MyOrders"))
                     },
                     {
                         path : "address",
-                        element : <Address/>
+                        lazy : page(() => import("../pages/Address"))
                     },
                     {
                         path : 'category',
-                        element : <AdminPermision><CategoryPage/></AdminPermision>
+                        lazy : adminPage(() => import("../pages/CategoryPage"))
                     },
                     {
                         path : "subcategory",
-                        element : <AdminPermision><SubCategoryPage/></AdminPermision>
+                        lazy : adminPage(() => import("../pages/SubCategoryPage"))
                     },
                     {
                         path : 'upload-product',
-                        element : <AdminPermision><UploadProduct/></AdminPermision>
+                        lazy : adminPage(() => import("../pages/UploadProduct"))
                     },
                     {
                         path : 'product',
-                        element : <AdminPermision><ProductAdmin/></AdminPermision>
+                        lazy : adminPage(() => import("../pages/ProductAdmin"))
                     },
                     {
                         path : 'sales-report',
-                        element : <AdminPermision><SalesReport/></AdminPermision>
+                        lazy : adminPage(() => import("../pages/SalesReport"))
                     },
                     {
                         path : 'payment-qr',
-                        element : <AdminPermision><PaymentQRCodeAdmin/></AdminPermision>
+                        lazy : adminPage(() => import("../pages/PaymentQRCodeAdmin"))
                     },
                     {
                         path : 'admin-users',
-                        element : <AdminPermision><AdminUsers/></AdminPermision>
+                        lazy : adminPage(() => import("../pages/AdminUsers"))
                     }
                 ]
             },
@@ -115,29 +101,29 @@ const router = createBrowserRouter([
                 children : [
                     {
                         path : ":subCategory",
-                        element : <ProductListPage/>
+                        lazy : page(() => import("../pages/ProductListPage"))
                     }
                 ]
             },
             {
                 path : "product/:product",
-                element : <ProductDisplayPage/>
+                lazy : page(() => import("../pages/ProductDisplayPage"))
             },
             {
                 path : 'cart',
-                element : <CartMobile/>
+                lazy : page(() => import("../pages/CartMobile"))
             },
             {
                 path : "checkout",
-                element : <CheckoutPage/>
+                lazy : page(() => import("../pages/CheckoutPage"))
             },
             {
                 path : "success",
-                element : <Success/>
+                lazy : page(() => import("../pages/Success"))
             },
             {
                 path : 'cancel',
-                element : <Cancel/>
+                lazy : page(() => import("../pages/Cancel"))
             }
         ]
     }
