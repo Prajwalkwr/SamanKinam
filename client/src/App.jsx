@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import fetchUserDetails from './utils/fetchUserDetails';
 import { setUserDetails } from './store/userSlice';
 import { setAllCategory,setAllSubCategory,setLoadingCategory } from './store/productSlice';
+import catalogSnapshot from './data/catalogSnapshot.json';
 import { useDispatch } from 'react-redux';
 import Axios from './utils/Axios';
 import SummaryApi from './common/SummaryApi';
@@ -32,8 +33,9 @@ function App() {
   }
 
   const fetchCategory = async()=>{
+    const seeded = catalogSnapshot.categories?.length > 0
     try {
-        dispatch(setLoadingCategory(true))
+        if (!seeded) dispatch(setLoadingCategory(true))
         const response = await Axios({
             ...SummaryApi.getCategory
         })
@@ -41,11 +43,11 @@ function App() {
 
         if(responseData.success){
            dispatch(setAllCategory(responseData.data.sort((a, b) => a.name.localeCompare(b.name)))) 
-        } else {
+        } else if (!seeded) {
           toast.error("Failed to load categories")
         }
     } catch (error) {
-        toast.error("Failed to load categories")
+        if (!seeded) toast.error("Failed to load categories")
         console.log("Category fetch error:", error)
     }finally{
       dispatch(setLoadingCategory(false))
@@ -71,6 +73,11 @@ function App() {
   
 
   useEffect(()=>{
+    if (catalogSnapshot.categories?.length) {
+      dispatch(setAllCategory([...catalogSnapshot.categories].sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')))))
+      dispatch(setAllSubCategory([...(catalogSnapshot.subcategories || [])].sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')))))
+      dispatch(setLoadingCategory(false))
+    }
     fetchUser()
     fetchCategory()
     fetchSubCategory()

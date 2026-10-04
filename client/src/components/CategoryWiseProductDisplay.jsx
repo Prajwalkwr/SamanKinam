@@ -8,17 +8,19 @@ import CardProduct from './CardProduct'
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
 import { useSelector } from 'react-redux'
 import { valideURLConvert } from '../utils/valideURLConvert'
+import catalogSnapshot from '../data/catalogSnapshot.json'
 
 const CategoryWiseProductDisplay = ({ id, name }) => {
-    const [data, setData] = useState([])
-    const [loading, setLoading] = useState(false)
+    const seeded = catalogSnapshot.products?.[id] || []
+    const [data, setData] = useState(seeded)
+    const [loading, setLoading] = useState(seeded.length === 0)
     const containerRef = useRef()
     const subCategoryData = useSelector(state => state.product.allSubCategory)
     const loadingCardNumber = new Array(6).fill(null)
 
     const fetchCategoryWiseProduct = async () => {
         try {
-            setLoading(true)
+            if (!seeded.length) setLoading(true)
             const response = await Axios({
                 ...SummaryApi.getProductByCategory,
                 params: {
